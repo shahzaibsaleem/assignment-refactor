@@ -1,182 +1,130 @@
 import * as React from "react";
-import lodash from 'lodash';
 import Modal from "react-modal";
-import { FaTimes } from "react-icons/fa";
-import { Button } from "./components/button";
+import {FaTimes} from "react-icons/fa";
+import {Button} from "./components/button";
 import ProductList from "./components/product-list-components";
-import { Form } from "./components/form";
+import {Form} from "./components/form";
 import logo from "./images/droppe-logo.png";
 import img1 from "./images/img1.png";
 import img2 from "./images/img2.png";
 import styles from "./shopApp.module.css";
+import {useEffect, useState} from "react";
+import {CreateProduct, Product} from "./interfaces/product.response.interface";
+import {fetchProducts, updateProducts} from "./services/api.client";
 
-export class ShopApp extends React.Component<
-  {},
-  { products: any[]; isOpen: boolean; isShowingMessage: boolean; message: string; numFavorites: number; prodCount: number }
-> {
-  constructor(props: any) {
-    super(props);
+export const ShopApp: React.FC = () => {
+    const [products, setProducts] = useState<Product[]>([]);
+    const [isOpen, setIsOpen] = useState<boolean>(false);
+    const [isMessageVisible, setIsMessageVisible] = useState<boolean>(false);
+    const [message, setMessage] = useState<string>('');
+    const [favouriteCount, setFavouriteCount] = useState<number>(0);
+    const [productCount, setProductCount] = useState<number>(0);
 
-    this.favClick = this.favClick.bind(this);
-    this.onSubmit = this.onSubmit.bind(this);
+    useEffect(() => {
+        document.title = "Droppe refactor app";
+    }, [])
 
-    this.state = { products: [], isOpen: false, isShowingMessage: false, message: '', numFavorites: 0, prodCount: 0 };
-
-    fetch('https://fakestoreapi.com/products').then((response) => {
-      let jsonResponse = response.json();
-
-      jsonResponse.then((rawData) => {
-        let data = [];
-
-        for (let i = 0; i < rawData.length; i++) {
-          let updatedProd = rawData[i];
-          data.push(updatedProd);
-        }
-        this.setState({
-          products: data,
+    useEffect(() => {
+        fetchProducts().then(products => {
+            setProducts(products);
+            setProductCount(products.length);
         });
-        this.setState({
-          prodCount: data.length
-        })
-      });
-    });
-  }
+    }, []);
 
-   componentDidMount(){
-      document.title = "Droppe refactor app"
-   }
+    const onAddToFavourite = (productTitle: string) => {
+        // const favouriteProductIndex = products.findIndex(({title}) => title === productTitle);
+        // const favouriteProduct = products[favouriteProductIndex];
 
-  favClick(title: string) {
-    const prods = this.state.products;
-    const idx = lodash.findIndex(prods, {title: title})
-    let currentFavs = this.state.numFavorites
-    let totalFavs: any;
+        const [updatedProducts, updatedFavouritesCount] =
+            products.reduce(([products, totalFavourites], product) => {
+                if (product.title === productTitle) {
+                    product.isFavourite = !product.isFavourite;
+                    totalFavourites = product.isFavourite ? totalFavourites+1 : totalFavourites-1
+                }
 
-    if (prods[idx].isFavorite) {
-      prods[idx].isFavorite = false;
-      totalFavs = --currentFavs
-    } else {
-      totalFavs = ++currentFavs
-      prods[idx].isFavorite = true;
+                return [
+                    [
+                        ...products,
+                        product,
+                    ],
+                    totalFavourites
+                ]
+            }, [[], 0] as [Product[], number])
+
+        setProducts(updatedProducts);
+        setFavouriteCount(favouriteCount + updatedFavouritesCount);
     }
 
-    this.setState(() => ({ products: prods, numFavorites: totalFavs }));
-  }
+    const onModalClose = () => setIsOpen(false);
 
-  onSubmit(payload: { title: string; description: string, price: string }) {
-    const updated = lodash.clone(this.state.products);
-    updated.push({
-      title: payload.title,
-      description: payload.description,
-      price: payload.price
-    });
+    const onModalOpen = () => setIsOpen(true);
 
-    this.setState({
-      products: updated,
-      prodCount: lodash.size(this.state.products) + 1
-    });
+    const onAddProduct = ({title, description, price}: CreateProduct) => {
+        const newProduct: Product = {
+            title,
+            description,
+            price,
+        };
 
-    this.setState({
-      isOpen: false,
-    });
-
-    this.setState({
-      isShowingMessage: true,
-      message: 'Adding product...'
-    })
-
-    // **this POST request doesn't actually post anything to any database**
-    fetch('https://fakestoreapi.com/products',{
-            method:"POST",
-            body:JSON.stringify(
+        setIsOpen(false);
+        setMessage('Adding product...')
+        setIsMessageVisible(true)
+        updateProducts(newProduct).then(({ id}) => {
+            const updatedProducts: Product[] = [
+                ...products,
                 {
-                    title: payload.title,
-                    price: payload.price,
-                    description: payload.description,
+                    id,
+                    ...newProduct
                 }
-            )
+            ];
+
+            setProducts(updatedProducts);
+            setProductCount(updatedProducts.length);
+
+            console.log(updatedProducts);
+            setTimeout(() => {
+                setIsMessageVisible(false);
+                setMessage('');
+            }, 2000)
         })
-            .then(res=>res.json())
-            .then(json => {
-               (function (t) {
-                 setTimeout(()=>{
-                    t.setState({
-                       isShowingMessage: false,
-                       message: ''
-                    })
-                 }, 2000)
-              })(this);
-            })
-  }
+    }
 
-  render() {
-    const { products, isOpen } = this.state;
     return (
-      <React.Fragment>
-        <div className={styles.header}>
-          <div className={['container', styles.headerImageWrapper].join(' ')}>
-            <img src={logo} className={styles.headerImage} />
-          </div>
-        </div>
+        <React.Fragment>
+            <div className={styles.header}>
+                <div className={['container', styles.headerImageWrapper].join(' ')}>
+                    <img src={logo} className={styles.headerImage}/>
+                </div>
+            </div>
 
-        <>
-           <span
-              className={['container', styles.main].join(' ')}
-              style={{margin: '50px inherit', display: 'flex', justifyContent: 'space-evenly'}}
-           >
-            <img src={img1} style={{maxHeight: "15em", display: 'block'}} />
-            <img src={img2} style={{maxHeight: "15rem", display: 'block'}} />
-           </span>
-        </>
-
-        <div className={['container', styles.main].join(' ')} style={{paddingTop: 0}}>
-          <div className={styles.buttonWrapper}>
-            <span role="button">
-               <Button
-                  onClick={function (this: any) {
-                     this.setState({
-                        isOpen: true,
-                     });
-                  }.bind(this)}
-               >Send product proposal</Button>
+            <span className={['container', styles.main].join(' ')} style={{margin: '50px inherit', display: 'flex', justifyContent: 'space-evenly'}}>
+               <img src={img1} style={{maxHeight: "15em", display: 'block'}}/>
+               <img src={img2} style={{maxHeight: "15rem", display: 'block'}}/>
             </span>
-             {this.state.isShowingMessage && <div className={styles.messageContainer}>
-                <i>{this.state.message}</i>
-             </div>}
-          </div>
 
-          <div className={styles.statsContainer}>
-            <span>Total products: {this.state.prodCount}</span>
-            {' - '}
-            <span>Number of favorites: {this.state.numFavorites}</span>
-          </div>
+            <div className={['container', styles.main].join(' ')} style={{paddingTop: 0}}>
+                <div className={styles.buttonWrapper}>
+                    <span role="button">
+                        <Button onClick={onModalOpen}>Send product proposal</Button>
+                    </span>
+                    {isMessageVisible && <div className={styles.messageContainer}><i>{message}</i></div>}
+                </div>
 
-          {products && !!products.length ? <ProductList products={products} onFav={this.favClick} /> : <div></div>}
-        </div>
+                <div className={styles.statsContainer}>
+                    <span>Total products: {productCount}</span>
+                    {' - '}
+                    <span>Number of favorites: {favouriteCount}</span>
+                </div>
 
-        <>
-           <Modal
-              isOpen={isOpen}
-              className={styles.reactModalContent}
-              overlayClassName={styles.reactModalOverlay}
-           >
-              <div className={styles.modalContentHelper}>
-                 <div
-                    className={styles.modalClose}
-                    onClick={function (this: any) {
-                       this.setState({
-                          isOpen: false,
-                       });
-                    }.bind(this)}
-                 ><FaTimes /></div>
+                {products && !!products.length ? <ProductList products={products} onFav={onAddToFavourite}/> : <div></div>}
+            </div>
 
-                 <Form
-                    on-submit={this.onSubmit}
-                 />
-              </div>
-           </Modal>
-        </>
-      </React.Fragment>
-    );
-  }
-}
+            <Modal isOpen={isOpen} className={styles.reactModalContent} overlayClassName={styles.reactModalOverlay}>
+                <div className={styles.modalContentHelper}>
+                    <div className={styles.modalClose} onClick={onModalClose}><FaTimes/></div>
+                    <Form onAddProduct={onAddProduct}/>
+                </div>
+            </Modal>
+        </React.Fragment>
+    )
+};

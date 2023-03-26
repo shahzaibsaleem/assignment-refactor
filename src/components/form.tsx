@@ -1,69 +1,56 @@
 import * as React from "react";
-import { Button } from "./button";
+import {Button} from "./button";
 import styles from "./form.module.css";
+import {useState} from "react";
+import {Product} from "../interfaces/product.response.interface";
 
 type IFormProps = {
-  "on-submit": (payload: { title: string; description: string; price: string }) => void;
+    onAddProduct: (payload: Product) => void;
 }
 
-export const Form: React.FC<IFormProps> = (props) => {
-  let formRef = React.useRef<HTMLFormElement>(null);
-  let titleRef = React.useRef<HTMLInputElement>(null);
-  let priceRef = React.useRef<HTMLInputElement>(null);
-  let descriptionRef = React.useRef<HTMLTextAreaElement>(null);
+export const Form: React.FC<IFormProps> = ({onAddProduct}) => {
+    const formRef = React.useRef<HTMLFormElement>(null);
 
-  const handleSubmit = (e: any) => {
-    e.preventDefault();
+    const [title, setTitle] = useState<string>('');
+    const [price, setPrice] = useState<number | undefined>(undefined);
+    const [description, setDescription] = useState<string>('');
 
-    if (!titleRef.current?.value) {
-      alert("Your product needs a title");
+    const handleSubmit = (e: any) => {
+        e.preventDefault();
 
-      return;
-    }
+        if (!title) {
+            alert("Your product needs a title");
+            return;
+        }
 
-    if (!descriptionRef.current?.value || !priceRef.current?.value) {
-      alert("Your product needs some content");
+        if (!description || (typeof price === 'undefined' || isNaN(price))) {
+            alert("Your product needs some content");
+            return;
+        }
 
-      return;
-    }
+        onAddProduct({title, description, price});
 
-    props["on-submit"]({
-      title: titleRef.current && titleRef.current.value,
-      description: descriptionRef.current && descriptionRef.current.value,
-      price: priceRef.current && priceRef.current.value,
-    });
+        formRef.current?.reset();
+    };
 
-    formRef.current?.reset();
-  };
+    return (
+        <form className={styles.form} onSubmit={(event) => handleSubmit(event)} ref={formRef}>
+            <span className={styles.label}>Product title: *</span>
 
-  return (
-    <form className={styles.form} onSubmit={(event) => handleSubmit(event)} ref={formRef}>
-      <span className={styles.label}>Product title: *</span>
+            <input placeholder="Title..." value={title} className={styles.input}
+                onChange={event => setTitle(event.target.value)}/>
 
-      <input
-        ref={titleRef}
-        placeholder="Title..."
-        defaultValue=""
-        className={styles.input}
-      />
+            <span className={styles.label}>Product details: *</span>
 
-      <span className={styles.label}>Product details: *</span>
+            <input placeholder="Price..." className={styles.input} value={price} type="number"
+                onChange={event => setPrice(event.target.value ? parseFloat(event.target.value) : undefined)}/>
 
-      <input
-        ref={priceRef}
-        placeholder="Price..."
-        defaultValue=""
-        className={styles.input}
-      />
+            <textarea placeholder="Start typing product description here..."
+                value={description} className={styles.textarea}
+                onChange={event => setDescription(event.target.value)}
+            />
 
-      <textarea
-        ref={descriptionRef}
-        placeholder="Start typing product description here..."
-        defaultValue=""
-        className={styles.textarea}
-      />
-
-      <Button>Add a product</Button>
-    </form>
-  );
+            <Button>Add a product</Button>
+        </form>
+    );
 };
