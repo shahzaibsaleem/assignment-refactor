@@ -1,9 +1,9 @@
 import * as React from "react";
 import Modal from "react-modal";
 import {FaTimes} from "react-icons/fa";
-import {Button} from "./components/button";
-import ProductList from "./components/product-list-components";
-import {Form} from "./components/form";
+import {Button} from "./components/button/button";
+import ProductList from "./components/product-list-components/product-list-components";
+import {Form} from "./components/form/form";
 import logo from "./images/droppe-logo.png";
 import img1 from "./images/img1.png";
 import img2 from "./images/img2.png";

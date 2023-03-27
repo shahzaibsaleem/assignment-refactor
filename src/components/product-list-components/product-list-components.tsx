@@ -1,7 +1,7 @@
 import * as React from "react";
 import {FaStar} from "react-icons/fa";
 import styles from "./product-list-components.module.css";
-import {Product as ProductInterface} from "../interfaces/product.response.interface";
+import {Product as ProductInterface} from "../../interfaces/product.response.interface";
 
 interface IPostsProps {
     products: ProductInterface[];

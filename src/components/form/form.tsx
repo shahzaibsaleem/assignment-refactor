@@ -1,8 +1,8 @@
 import * as React from "react";
-import {Button} from "./button";
+import {Button} from "../button/button";
 import styles from "./form.module.css";
 import {useState} from "react";
-import {Product} from "../interfaces/product.response.interface";
+import {Product} from "../../interfaces/product.response.interface";
 
 type IFormProps = {
     onAddProduct: (payload: Product) => void;
