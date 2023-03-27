@@ -31,13 +31,13 @@ export const ShopApp: React.FC = () => {
         });
     }, []);
 
-    const onAddToFavourite = (productTitle: string) => {
+    const onAddToFavourite = (productId: number) => {
         // const favouriteProductIndex = products.findIndex(({title}) => title === productTitle);
         // const favouriteProduct = products[favouriteProductIndex];
 
         const [updatedProducts, updatedFavouritesCount] =
             products.reduce(([products, totalFavourites], product) => {
-                if (product.title === productTitle) {
+                if (product.id === productId) {
                     product.isFavourite = !product.isFavourite;
                     totalFavourites = product.isFavourite ? totalFavourites+1 : totalFavourites-1
                 }
@@ -116,7 +116,7 @@ export const ShopApp: React.FC = () => {
                     <span>Number of favorites: {favouriteCount}</span>
                 </div>
 
-                {products && !!products.length ? <ProductList products={products} onFav={onAddToFavourite}/> : <div></div>}
+                {products && !!products.length ? <ProductList products={products} onMarkAsFavourite={onAddToFavourite}/> : <div></div>}
             </div>
 
             <Modal isOpen={isOpen} className={styles.reactModalContent} overlayClassName={styles.reactModalOverlay}>
