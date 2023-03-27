@@ -1,10 +1,11 @@
+import { ProductNotFoundException } from "../exceptions/product.not-found.exception";
 import {CreateProduct, ProductResponse} from "../interfaces/product.response.interface";
 
 export const productsEndpoint = 'https://fakestoreapi.com/products'
 
 export const fetchProducts = async (): Promise<ProductResponse[]> => {
     return await fetchData<ProductResponse[]>(productsEndpoint).catch(error => {
-        throw new Error(error);
+        throw new ProductNotFoundException(error);
     })
 }
 

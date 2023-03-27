@@ -98,8 +98,8 @@ export const ShopApp: React.FC = () => {
             </div>
 
             <span className={['container', styles.main].join(' ')} style={{margin: '50px inherit', display: 'flex', justifyContent: 'space-evenly'}}>
-               <img src={img1} style={{maxHeight: "15em", display: 'block'}}/>
-               <img src={img2} style={{maxHeight: "15rem", display: 'block'}}/>
+               <img alt='not found' src={img1} style={{maxHeight: "15em", display: 'block'}}/>
+               <img alt='not found' src={img2} style={{maxHeight: "15rem", display: 'block'}}/>
             </span>
 
             <div className={['container', styles.main].join(' ')} style={{paddingTop: 0}}>
