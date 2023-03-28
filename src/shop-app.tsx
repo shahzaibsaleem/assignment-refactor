@@ -93,7 +93,7 @@ export const ShopApp: React.FC = () => {
         <React.Fragment>
             <div className={styles.header}>
                 <div className={['container', styles.headerImageWrapper].join(' ')}>
-                    <img src={logo} className={styles.headerImage}/>
+                    <img alt='not found' src={logo} className={styles.headerImage}/>
                 </div>
             </div>
 
